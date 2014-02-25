@@ -1,0 +1,23 @@
+{
+    "name": "f3ath/forkrunner",
+    "description": "A simple framework to run code in parallel threads",
+    "keywords": ["fork", "pcntl", "multithread", "pcntl_fork", "pcntl_waitpid"],
+    "homepage": "https://github.com/f3ath/ForkRunner",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexey Karapetov",
+            "email": "karapetov@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "ext-pcntl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "F3\\ForkRunner\\": "src/"
+        }
+    }
+}
