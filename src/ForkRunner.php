@@ -36,7 +36,7 @@ class ForkRunner
                 $children[] = $pid;
                 $this->onThreadStart($pid);
             } else { //  child
-                break; // дети не форкаются
+                break; 
             }
         }
         if ($pid) { // parent
