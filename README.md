@@ -9,6 +9,7 @@ Via composer:
 
 #Usage
 ```php
+<?php
 $runner = new F3\ForkRunner\ForkRunner();
 $runner->run(10, function(){printf("%s\n", getmypid());});
 ```
