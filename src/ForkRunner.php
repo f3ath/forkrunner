@@ -1,40 +1,35 @@
 <?php
 namespace F3\ForkRunner;
 
-use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * Running a callback in parallel threads
- *
- * @package Base/PCNTL
- * @version $id$
- * @author Alexey Karapetov <karapetov@gmail.com>
+ * Running a callback in parallel processes
  */
 class ForkRunner
 {
     /**
-     * Run a callback in $threadsCount parrallel threads
+     * Run a callback in $threadsCount parallel processes
      *
-     * @param int       $threadsCount   Number of threads
-     * @param callable  $callback       The code to run
-     * @param array     $args           callback arguments
-     * @return array (pid => status), status from pcntl_waitpid()
+     * @param callable $callback Callback to run
+     * @param array[] $arguments Array of arguments, two-dimensional
+     * @return array (pid => callback result)
      */
-    public function run($threadsCount, $callback, array $args = array())
+    public function run(callable $callback, array $arguments)
     {
-        if (!is_callable($callback)) {
-            throw new InvalidArgumentException(sprintf('%s is not callable', gettype($callback)));
+        if (empty($arguments)) {
+            throw new \InvalidArgumentException('No arguments')
         }
+        $file = tempnam(sys_get_temp_dir(), 'php');
+        file_put_contents($file, "<?php\n", FILE_APPEND);
         $children = array();
-        for ($thread = 0; $thread < $threadsCount; $thread++) {
+        foreach ($arguments as $key => $arg) {
             $pid = pcntl_fork();
-            if (-1 == $pid) {
-                throw new RuntimeException(sprintf('Unable to fork thread %d of %d', $thread + 1, $threadsCount));
+            if (-1 === $pid) {
+                throw new RuntimeException(sprintf('Unable to fork thread %d of %d', $key, count($arguments)));
             }
             if ($pid) { // parent
                 $children[] = $pid;
-                $this->onThreadStart($pid);
             } else { //  child
                 break; 
             }
@@ -42,32 +37,25 @@ class ForkRunner
         if ($pid) { // parent
             foreach ($children as $child) {
                 pcntl_waitpid($child, $status);
-                $this->onThreadExit($child, $status);
             }
-        } else { // child
-            call_user_func_array($callback, $args);
-            die();
+            $result = null;
+            require $file;
+            unlink($file);
+            return $result;
         }
-    }
-
-    /**
-     * Hook on thread exit
-     *
-     * @param int $pid      Process ID
-     * @param int $status   Exit status
-     * @return void
-     */
-    protected function onThreadExit($pid, $status)
-    {
-    }
-
-    /**
-     * Hook on thread start
-     *
-     * @param int $pid Process ID
-     * @return void
-     */
-    protected function onThreadStart($pid)
-    {
+        // the rest happens is the child process
+        file_put_contents(
+            $file,
+            sprintf(
+                "\$result[%s] = %s;\n", 
+                getmypid(), 
+                var_export(
+                    call_user_func_array($callback, $arguments), 
+                    true
+                )
+            ),
+            FILE_APPEND
+        );
+        die(0);
     }
 }
