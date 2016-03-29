@@ -1,7 +1,7 @@
 ForkRunner
 ==========
 
-A simple framework to run a process in multiple threads
+A simple framework to run a process in multiple processes
 
 #Installation
 Via composer:
