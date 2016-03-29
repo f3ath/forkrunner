@@ -1,7 +1,7 @@
 {
     "name": "f3ath/forkrunner",
-    "description": "A simple framework to run code in parallel threads",
-    "keywords": ["fork", "pcntl", "multithread", "pcntl_fork", "pcntl_waitpid"],
+    "description": "A simple framework to run code in parallel processes",
+    "keywords": ["fork", "pcntl", "pcntl_fork", "pcntl_waitpid", "parallel", "execution"],
     "homepage": "https://github.com/f3ath/ForkRunner",
     "license": "MIT",
     "authors": [
