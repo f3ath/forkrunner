@@ -12,50 +12,53 @@ class ForkRunner
      * Run a callback in $threadsCount parallel processes
      *
      * @param callable $callback Callback to run
-     * @param array[] $arguments Array of arguments, two-dimensional
+     * @param array[] $argsCollection Array of arguments, two-dimensional
      * @return array (pid => callback result)
      */
-    public function run(callable $callback, array $arguments)
+    public function run(callable $callback, array $argsCollection)
     {
-        if (empty($arguments)) {
-            throw new \InvalidArgumentException('No arguments')
-        }
         $file = tempnam(sys_get_temp_dir(), 'php');
-        file_put_contents($file, "<?php\n", FILE_APPEND);
-        $children = array();
-        foreach ($arguments as $key => $arg) {
+        file_put_contents($file, "<?php\n");
+        $children = [];
+        foreach ($argsCollection as $key => $args) {
             $pid = pcntl_fork();
-            if (-1 === $pid) {
-                throw new RuntimeException(sprintf('Unable to fork thread %d of %d', $key, count($arguments)));
-            }
-            if ($pid) { // parent
-                $children[] = $pid;
-            } else { //  child
-                break; 
+            switch ($pid) {
+                case -1:
+                    throw new RuntimeException(sprintf('Unable to fork thread %d of %d', $key, count($argsCollection)));
+                case 0: // child
+                    $this->runChild($callback, $args, $file);
+                    die(0);
+                default: //parent
+                    $children[] = $pid;
             }
         }
-        if ($pid) { // parent
-            foreach ($children as $child) {
-                pcntl_waitpid($child, $status);
-            }
-            $result = null;
-            require $file;
-            unlink($file);
-            return $result;
+        foreach ($children as $child) {
+            pcntl_waitpid($child, $status);
         }
-        // the rest happens is the child process
+        $result = [];
+        require $file;
+        unlink($file);
+        return $result;
+    }
+
+    /**
+     * @param callable $callback
+     * @param array $arguments
+     * @param $file
+     */
+    private function runChild(callable $callback, array $arguments, $file)
+    {
         file_put_contents(
             $file,
             sprintf(
-                "\$result[%s] = %s;\n", 
-                getmypid(), 
+                "\$result[%s] = %s;\n",
+                getmypid(),
                 var_export(
-                    call_user_func_array($callback, $arguments), 
+                    call_user_func_array($callback, $arguments),
                     true
                 )
             ),
             FILE_APPEND
-        );
-        die(0);
+        ); 
     }
 }
