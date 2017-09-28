@@ -24,7 +24,7 @@ class ForkRunner
             $pid = pcntl_fork();
             switch ($pid) {
                 case -1:
-                    throw new RuntimeException(sprintf('Unable to fork thread %d of %d', $key, count($argsCollection)));
+                    throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
                     $this->runChild($callback, $args, $file);
                     die(0);
