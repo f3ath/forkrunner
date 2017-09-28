@@ -1,13 +1,13 @@
 ForkRunner
 ==========
 
-A simple framework to run a process in multiple processes
+A simple library to run a process in multiple processes
 
-#Installation
+# Installation
 Via composer:
 `$ composer require "f3ath/forkrunner"`
 
-#Usage
+# Usage
 ```php
 <?php
 $runner = new F3\ForkRunner\ForkRunner();
