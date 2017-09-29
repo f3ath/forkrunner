@@ -29,8 +29,7 @@ class ForkRunner
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
-                    $memory = shm_attach($pointerId, 1024);
-                    shm_put_var($memory, $key, call_user_func_array($callback, $args));
+                    $this->writeToSharedMemory($memory, $key, call_user_func_array($callback, $args));
                     shm_detach($memory);
                     die(0);
                 default: //parent
@@ -46,10 +45,25 @@ class ForkRunner
         foreach ($keys as $key) {
             $memory = shm_attach($pointerId, 1024);
             array_push($result, shm_get_var($memory, $key));
-            shm_remove_var($memory, $key);
             shm_detach($memory);
         }
 
         return $result;
+    }
+
+    /**
+     * @param resource $shmId
+     * @param int $key
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    private function writeToSharedMemory($shmId, $key, $value)
+    {
+        if (shm_has_var($shmId, $key)) {
+            shm_remove_var($shmId, $key);
+        }
+
+        return shm_put_var($shmId, $key, $value);
     }
 }
