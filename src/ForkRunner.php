@@ -17,48 +17,39 @@ class ForkRunner
      */
     public function run(callable $callback, array $argsCollection)
     {
-        $file = tempnam(sys_get_temp_dir(), 'php');
-        file_put_contents($file, "<?php\n");
+        $pointerId = ftok(__FILE__, 'f');
         $children = [];
+        $result = [];
+        $keys = [];
         foreach ($argsCollection as $key => $args) {
+            $memory = shm_attach($pointerId, 1024);
             $pid = pcntl_fork();
+            $keys[] = $key;
             switch ($pid) {
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
-                    $this->runChild($callback, $args, $file);
+                    $memory = shm_attach($pointerId, 1024);
+                    shm_put_var($memory, $key, call_user_func_array($callback, $args));
+                    shm_detach($memory);
                     die(0);
                 default: //parent
                     $children[] = $pid;
             }
+            shm_detach($memory);
         }
+
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
         }
-        $result = [];
-        require $file;
-        unlink($file);
-        return $result;
-    }
 
-    /**
-     * @param callable $callback
-     * @param array $arguments
-     * @param $file
-     */
-    private function runChild(callable $callback, array $arguments, $file)
-    {
-        file_put_contents(
-            $file,
-            sprintf(
-                "\$result[%s] = %s;\n",
-                getmypid(),
-                var_export(
-                    call_user_func_array($callback, $arguments),
-                    true
-                )
-            ),
-            FILE_APPEND
-        ); 
+        foreach ($keys as $key) {
+            $memory = shm_attach($pointerId, 1024);
+            array_push($result, shm_get_var($memory, $key));
+            shm_remove_var($memory, $key);
+            shm_detach($memory);
+        }
+
+        return $result;
     }
 }
