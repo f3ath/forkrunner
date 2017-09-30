@@ -21,7 +21,7 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
         $this->assertLessThan(3, microtime(true) - $start, 'Process took loo long');
     }
 
-    public function testResultsOrderIsKept()
+    public function testResultsOrderIsUnchanged()
     {
         $func = function ($n) {
             return $n * $n;
@@ -29,6 +29,7 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
 
         $runner = new ForkRunner();
         $args = [];
+        $expected = [];
         for ($i = 0; $i < 100; $i++) {
             $args[] = [$i];
             $expected[] = $i * $i;
