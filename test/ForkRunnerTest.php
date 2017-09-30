@@ -1,5 +1,4 @@
 <?php
-
 namespace F3\ForkRunner;
 
 class ForkRunnerTest extends \PHPUnit_Framework_TestCase

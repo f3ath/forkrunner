@@ -1,8 +1,16 @@
 <?php
 namespace F3\ForkRunner;
 
-class FileAggregator implements Aggregator
+class FileCollector implements Collector
 {
+    /**
+     * @var string
+     */
+    private $file;
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         $this->file = tempnam(sys_get_temp_dir(), 'php');
@@ -10,32 +18,26 @@ class FileAggregator implements Aggregator
     }
 
     /**
-     * @param mixed $result
+     * Value MUST survive var_export()
+     * @inheritdoc
      */
-    public function addValue($result)
+    public function addValue($val)
     {
         file_put_contents(
             $this->file,
-            sprintf(
-                "\$result[%s] = %s;\n",
-                getmypid(),
-                var_export(
-                    $result,
-                    true
-                )
-            ),
+            sprintf("\$values[] = %s;\n", var_export($val, true)),
             FILE_APPEND
         );
     }
 
     /**
-     * @return array
+     * @inheritdoc
      */
     public function getValues()
     {
-        $result = [];
+        $values = [];
         require $this->file;
         unlink($this->file);
-        return $result;
+        return $values;
     }
 }
