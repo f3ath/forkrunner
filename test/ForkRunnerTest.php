@@ -36,4 +36,15 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
         }
         $this->assertEquals($expected, $runner->run($func, $args));
     }
+
+    public function testExampleFromTheDocs()
+    {
+        $func = function ($n) {
+            return $n * $n;
+        };
+        $runner = new ForkRunner();
+        $args = [[3], [4], [5]];
+        $result = $runner->run($func, $args); // [9, 16, 25]
+        $this->assertEquals([9, 16, 25], $result);
+    }
 }

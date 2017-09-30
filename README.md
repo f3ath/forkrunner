@@ -1,28 +1,18 @@
-ForkRunner
-==========
+# ForkRunner
 
 A simple library to run a process in multiple processes
 
-# Installation
+## Installation
 Via composer:
 `$ composer require "f3ath/forkrunner"`
 
-# Usage
+## Usage
 ```php
 <?php
-$runner = new F3\ForkRunner\ForkRunner();
-$runner->run(10, function(){printf("%s\n", getmypid());});
-```
-will produce something like
-```
-10013
-10014
-10017
-10015
-10021
-10022
-10018
-10020
-10016
-10019
+$func = function ($n) {
+    return $n * $n;
+};
+$runner = new \F3\ForkRunner\ForkRunner();
+$args = [[3], [4], [5]];
+$result = $runner->run($func, $args); // [9, 16, 25]
 ```
