@@ -21,11 +21,11 @@ class FileCollector implements Collector
      * Value MUST survive var_export()
      * @inheritdoc
      */
-    public function addValue($val)
+    public function setValue($key, $val)
     {
         file_put_contents(
             $this->file,
-            sprintf("\$values[] = %s;\n", var_export($val, true)),
+            sprintf("\$values[%s] = %s;\n", var_export($key, true), var_export($val, true)),
             FILE_APPEND
         );
     }

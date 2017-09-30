@@ -18,10 +18,12 @@ interface Collector
     public function init();
 
     /**
-     * Add value. Should be called from an "executor" process
+     * Set value. Should be called from an "executor" process
+     * @param string|int $key
      * @param mixed $val
+     * @return
      */
-    public function addValue($val);
+    public function setValue($key, $val);
 
     /**
      * Get collected values. Should be called from the main process;

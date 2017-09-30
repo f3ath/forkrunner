@@ -8,6 +8,9 @@ use RuntimeException;
  */
 class ForkRunner
 {
+    /**
+     * @var Collector
+     */
     private $collector;
 
     public function __construct(Collector $collector = null)
@@ -16,24 +19,23 @@ class ForkRunner
     }
 
     /**
-     * Run a callback in $threadsCount parallel processes
+     * Run a callback in parallel processes
      *
      * @param callable $callback Callback to run
      * @param array[] $argsCollection Array of arguments, two-dimensional
-     * @return array (pid => callback result)
+     * @return array array of results
      */
     public function run(callable $callback, array $argsCollection)
     {
         $this->collector->init();
         $children = [];
-        $failedChildren = [];
         foreach ($argsCollection as $key => $args) {
             $pid = pcntl_fork();
             switch ($pid) {
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
-                    $this->collector->addValue(call_user_func_array($callback, $args));
+                    $this->collector->setValue($key, call_user_func_array($callback, $args));
                     die(0);
                 default: //parent
                     $children[] = $pid;
