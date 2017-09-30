@@ -18,7 +18,7 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
         }
         $start = microtime(true);
         $result = $runner->run($func, $args);
-        $this->assertLessThan(2, microtime(true) - $start, 'Process took loo long');
+        $this->assertLessThan(10, microtime(true) - $start, 'Process took loo long');
         $values = array_values($result);
         sort($values);
         $this->assertEquals($expected, $values);
