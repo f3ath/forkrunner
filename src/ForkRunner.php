@@ -8,6 +8,13 @@ use RuntimeException;
  */
 class ForkRunner
 {
+    private $aggregator;
+
+    public function __construct()
+    {
+        $this->aggregator = new Aggregator();
+    }
+
     /**
      * Run a callback in $threadsCount parallel processes
      *
@@ -17,8 +24,7 @@ class ForkRunner
      */
     public function run(callable $callback, array $argsCollection)
     {
-        $file = tempnam(sys_get_temp_dir(), 'php');
-        file_put_contents($file, "<?php\n");
+        $this->aggregator->prepare();
         $children = [];
         foreach ($argsCollection as $key => $args) {
             $pid = pcntl_fork();
@@ -26,7 +32,7 @@ class ForkRunner
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
-                    $this->runChild($callback, $args, $file);
+                    $this->aggregator->processResult(call_user_func_array($callback, $args));
                     die(0);
                 default: //parent
                     $children[] = $pid;
@@ -35,30 +41,6 @@ class ForkRunner
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
         }
-        $result = [];
-        require $file;
-        unlink($file);
-        return $result;
-    }
-
-    /**
-     * @param callable $callback
-     * @param array $arguments
-     * @param $file
-     */
-    private function runChild(callable $callback, array $arguments, $file)
-    {
-        file_put_contents(
-            $file,
-            sprintf(
-                "\$result[%s] = %s;\n",
-                getmypid(),
-                var_export(
-                    call_user_func_array($callback, $arguments),
-                    true
-                )
-            ),
-            FILE_APPEND
-        ); 
+        return $this->aggregator->getAggregatedResult();
     }
 }

@@ -12,7 +12,7 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
         };
 
         $runner = new ForkRunner();
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $args[] = [$i];
             $expected[] = $i * $i;
         }
