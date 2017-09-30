@@ -10,9 +10,9 @@ class ForkRunner
 {
     private $aggregator;
 
-    public function __construct()
+    public function __construct(Aggregator $aggregator = null)
     {
-        $this->aggregator = new Aggregator();
+        $this->aggregator = $aggregator ?: new FileAggregator();
     }
 
     /**
@@ -24,7 +24,7 @@ class ForkRunner
      */
     public function run(callable $callback, array $argsCollection)
     {
-        $this->aggregator->prepare();
+        $this->aggregator->init();
         $children = [];
         foreach ($argsCollection as $key => $args) {
             $pid = pcntl_fork();
@@ -32,7 +32,7 @@ class ForkRunner
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
-                    $this->aggregator->processResult(call_user_func_array($callback, $args));
+                    $this->aggregator->addValue(call_user_func_array($callback, $args));
                     die(0);
                 default: //parent
                     $children[] = $pid;
@@ -41,6 +41,6 @@ class ForkRunner
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
         }
-        return $this->aggregator->getAggregatedResult();
+        return $this->aggregator->getValues();
     }
 }
