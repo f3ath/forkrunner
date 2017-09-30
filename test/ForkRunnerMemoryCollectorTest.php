@@ -1,8 +1,14 @@
 <?php
+/**
+ * Aleksandr Kozhevnikov <iamdevice@gmail.com>
+ * Date: 30.09.2017 22:37
+ */
 
 namespace F3\ForkRunner;
 
-class ForkRunnerTest extends \PHPUnit_Framework_TestCase
+use PHPUnit_Framework_TestCase;
+
+class ForkRunnerMemoryCollectorTest extends PHPUnit_Framework_TestCase
 {
     public function testParallelExecutionIsFasterThanSerial()
     {
