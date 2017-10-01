@@ -17,7 +17,8 @@ class ForkRunnerMemoryCollectorTest extends PHPUnit_Framework_TestCase
             return $n * $n;
         };
 
-        $runner = new ForkRunner();
+        $collector = new MemoryCollector();
+        $runner = new ForkRunner($collector);
         $args = [];
         for ($i = 0; $i < 10; $i++) {
             $args[] = [$i];
@@ -34,7 +35,8 @@ class ForkRunnerMemoryCollectorTest extends PHPUnit_Framework_TestCase
             return $n * $n;
         };
 
-        $runner = new ForkRunner();
+        $collector = new MemoryCollector();
+        $runner = new ForkRunner($collector);
         $args = [];
         $expected = [];
         for ($i = 0; $i < 100; $i++) {
@@ -49,7 +51,10 @@ class ForkRunnerMemoryCollectorTest extends PHPUnit_Framework_TestCase
         $func = function ($n) {
             return $n * $n;
         };
-        $runner = new ForkRunner();
+
+        $collector = new MemoryCollector();
+        $runner = new ForkRunner($collector);
+
         $args = [[3], [4], [5]];
         $result = $runner->run($func, $args); // [9, 16, 25]
         $this->assertEquals([9, 16, 25], $result);

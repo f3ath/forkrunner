@@ -8,32 +8,33 @@ namespace F3\ForkRunner;
 
 class MemoryCollector implements Collector
 {
-    /** @var array $keys */
-    private $keys = [];
+    const KEY = 0;
     /** @var int $pointer */
     private $pointer;
 
     public function init()
     {
-        $project = chr(rand(0, 255));
-        $this->pointer = ftok(__FILE__, $project);
+        $this->pointer = ftok(__FILE__, chr(rand(0, 255)));
     }
 
     public function setValue($key, $val)
     {
         $memory = shm_attach($this->pointer);
-        shm_put_var($memory, $key, $val);
+        if (shm_has_var($memory, self::KEY)) {
+            $values = shm_get_var($memory, self::KEY);
+            $values = is_scalar($values) ? [ $values ] : $values;
+        }
+        $values[] = $val;
+        shm_put_var($memory, self::KEY, $values);
         shm_detach($memory);
     }
 
     public function getValues()
     {
-        $result = [];
         $memory = shm_attach($this->pointer);
-        foreach ($this->keys as $key) {
-            $result[$key] = shm_get_var($memory, $key);
-            shm_remove_var($memory, $key);
-        }
+        $result = shm_get_var($memory, self::KEY);
         shm_remove($memory);
+
+        return $result;
     }
 }
