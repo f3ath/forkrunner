@@ -24,7 +24,7 @@ class MemoryCollector implements Collector
             $values = shm_get_var($memory, self::KEY);
             $values = is_scalar($values) ? [ $values ] : $values;
         }
-        $values[] = $val;
+        $values[$key] = $val;
         shm_put_var($memory, self::KEY, $values);
         shm_detach($memory);
     }
