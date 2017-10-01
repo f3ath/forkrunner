@@ -36,13 +36,16 @@ class ForkRunner
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
                     $this->collector->setValue($key, call_user_func_array($callback, $args));
-                    die(0);
+                    exit(0);
                 default: //parent
                     $children[] = $pid;
             }
         }
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
+            while (!pcntl_wifexited($status)) {
+                pcntl_waitpid($child, $status);
+            }
         }
         return $this->collector->getValues();
     }
