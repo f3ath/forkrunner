@@ -17,8 +17,8 @@ class MemoryCollector implements Collector
     public function init()
     {
         $this->pointer = ftok(__FILE__, chr(rand(0, 255)));
-        $this->semaphore = sem_get($this->pointer);
-        sem_acquire($this->semaphore, 10);
+        $this->semaphore = sem_get($this->pointer, 10);
+        sem_acquire($this->semaphore);
     }
 
     public function setValue($key, $val)
