@@ -9,48 +9,53 @@ namespace F3\ForkRunner;
 class MemoryCollector implements Collector
 {
     const KEY = 0;
+    const LOCK_ID = -1;
     /** @var int $pointer */
     private $pointer;
-
+    /** @var int $locker */
+    private $locker;
     private $semaphore;
+    /** @var string $keyFile */
+    private $keyFile;
 
     public function init()
     {
         $this->pointer = ftok(__FILE__, chr(rand(0, 255)));
+        $this->locker = rand(0, 10000);
         $this->semaphore = sem_get($this->pointer, 10);
         sem_acquire($this->semaphore);
+        $this->keyFile = tempnam(sys_get_temp_dir(), 'lock');
     }
 
     public function setValue($key, $val)
     {
-        $saved = false;
-
-        while (!$saved) {
-            $saved = $this->saveIntoMemory($key, $val);
+        $memory = shm_attach($this->pointer);
+        while (false === shm_put_var($memory, $key, $val)) {
+            usleep(1);
         }
+        // TODO: Save keys into memory (not temp file) or think how get all keys from memory block
+        file_put_contents($this->keyFile, $key . PHP_EOL, FILE_APPEND);
+        shm_detach($memory);
     }
 
     public function getValues()
     {
         sem_remove($this->semaphore);
         $memory = shm_attach($this->pointer);
-        $result = shm_get_var($memory, self::KEY);
+        $result = [];
+        foreach ($this->getKeys() as $key) {
+            $result[$key] = shm_get_var($memory, $key);
+        }
         shm_remove($memory);
 
         return $result;
     }
 
-    private function saveIntoMemory($key, $val)
+    private function getKeys()
     {
-        $memory = shm_attach($this->pointer);
-        if (shm_has_var($memory, self::KEY)) {
-            $values = shm_get_var($memory, self::KEY);
-            $values = is_scalar($values) ? [ $values ] : $values;
-        }
-        $values[$key] = $val;
-        $result = shm_put_var($memory, self::KEY, $values);
-        shm_detach($memory);
+        $keys = file_get_contents($this->keyFile);
+        unlink($this->keyFile);
 
-        return $result;
+        return explode(PHP_EOL, trim($keys));
     }
 }

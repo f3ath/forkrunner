@@ -20,7 +20,7 @@ class ForkRunnerMemoryCollectorTest extends PHPUnit_Framework_TestCase
         $collector = new MemoryCollector();
         $runner = new ForkRunner($collector);
         $args = [];
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $args[] = [$i];
             $expected[] = $i * $i;
         }
