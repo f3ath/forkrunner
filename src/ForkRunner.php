@@ -31,7 +31,7 @@ class ForkRunner
             $pid = pcntl_fork();
             switch ($pid) {
                 case -1:
-                    throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key,
+                    throw new \RuntimeException(sprintf('Unable to fork process %d of %d', $key,
                         count($argsCollection)));
                 case 0: // child
                     $this->collector->setValue($key, call_user_func_array($callback, $args));
