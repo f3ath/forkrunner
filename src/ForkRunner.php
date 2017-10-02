@@ -17,53 +17,48 @@ class ForkRunner
      */
     public function run(callable $callback, array $argsCollection)
     {
-        $pointerId = ftok(__FILE__, 'f');
+        $file = tempnam(sys_get_temp_dir(), 'php');
+        file_put_contents($file, "<?php\n");
         $children = [];
-        $result = [];
-        $keys = [];
         foreach ($argsCollection as $key => $args) {
-            $memory = shm_attach($pointerId, 1024);
             $pid = pcntl_fork();
-            $keys[] = $key;
             switch ($pid) {
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
                 case 0: // child
-                    $this->writeToSharedMemory($memory, $key, call_user_func_array($callback, $args));
-                    shm_detach($memory);
+                    $this->runChild($callback, $args, $file);
                     die(0);
                 default: //parent
                     $children[] = $pid;
             }
-            shm_detach($memory);
         }
-
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
         }
-
-        foreach ($keys as $key) {
-            $memory = shm_attach($pointerId, 1024);
-            array_push($result, shm_get_var($memory, $key));
-            shm_detach($memory);
-        }
-
+        $result = [];
+        require $file;
+        unlink($file);
         return $result;
     }
 
     /**
-     * @param resource $shmId
-     * @param int $key
-     * @param mixed $value
-     *
-     * @return bool
+     * @param callable $callback
+     * @param array $arguments
+     * @param $file
      */
-    private function writeToSharedMemory($shmId, $key, $value)
+    private function runChild(callable $callback, array $arguments, $file)
     {
-        if (shm_has_var($shmId, $key)) {
-            shm_remove_var($shmId, $key);
-        }
-
-        return shm_put_var($shmId, $key, $value);
+        file_put_contents(
+            $file,
+            sprintf(
+                "\$result[%s] = %s;\n",
+                getmypid(),
+                var_export(
+                    call_user_func_array($callback, $arguments),
+                    true
+                )
+            ),
+            FILE_APPEND
+        ); 
     }
 }
