@@ -27,7 +27,8 @@ interface Collector
 
     /**
      * Get collected values. Should be called from the main process;
+     * @param array $keys
      * @return array
      */
-    public function getValues();
+    public function getValues(array $keys);
 }

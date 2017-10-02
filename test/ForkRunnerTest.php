@@ -10,7 +10,8 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
             return $n * $n;
         };
 
-        $runner = new ForkRunner();
+        $expected = [];
+        $runner = new ForkRunner(new SharedMemoryCollector());
         $args = [];
         for ($i = 0; $i < 10; $i++) {
             $args[] = [$i];

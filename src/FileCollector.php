@@ -33,7 +33,7 @@ class FileCollector implements Collector
     /**
      * @inheritdoc
      */
-    public function getValues()
+    public function getValues(array $keys)
     {
         $values = [];
         require $this->file;

@@ -29,8 +29,10 @@ class ForkRunner
     {
         $this->collector->init();
         $children = [];
+        $keys = [];
         foreach ($argsCollection as $key => $args) {
             $pid = pcntl_fork();
+            $keys[] = $key;
             switch ($pid) {
                 case -1:
                     throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
@@ -41,9 +43,10 @@ class ForkRunner
                     $children[] = $pid;
             }
         }
+
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
         }
-        return $this->collector->getValues();
+        return $this->collector->getValues(array_keys($argsCollection));
     }
 }
