@@ -40,4 +40,12 @@ class FileCollector implements Collector
         unlink($this->file);
         return $values;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isSupported()
+    {
+        return true;
+    }
 }

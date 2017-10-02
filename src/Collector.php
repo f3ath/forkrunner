@@ -31,4 +31,10 @@ interface Collector
      * @return array
      */
     public function getValues(array $keys);
+
+    /**
+     * Is collector supported bu current system
+     * @return mixed
+     */
+    public function isSupported();
 }

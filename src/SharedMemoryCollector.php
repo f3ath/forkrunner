@@ -4,13 +4,24 @@ namespace F3\ForkRunner;
 class SharedMemoryCollector implements Collector
 {
     private $pointerId;
+    private $bufferSize;
+
+    /**
+     * SharedMemoryCollector constructor.
+     * @param int $bufferSize
+     */
+    public function __construct($bufferSize)
+    {
+        $this->bufferSize = $bufferSize;
+    }
+
 
     /**
      * @inheritdoc
      */
     public function init()
     {
-        $this->pointerId = \ftok(__FILE__, 'f');
+        $this->pointerId = ftok(__FILE__, 'f');
 
     }
 
@@ -20,9 +31,9 @@ class SharedMemoryCollector implements Collector
      */
     public function setValue($key, $val)
     {
-        $memory = \shm_attach($this->pointerId, 1024);
-        \shm_put_var($memory, $key, $val);
-        \shm_detach($memory);
+        $memory = $this->getMemResource();
+        shm_put_var($memory, $key, $val);
+        shm_detach($memory);
     }
 
     /**
@@ -31,12 +42,27 @@ class SharedMemoryCollector implements Collector
     public function getValues(array $keys)
     {
         $result = [];
-        $memory = \shm_attach($this->pointerId, 1024);
+        $memory = $this->getMemResource();
         foreach ($keys as $key) {
-            $result[$key] = \shm_get_var($memory, $key);
+            $result[$key] = shm_get_var($memory, $key);
         }
-        \shm_detach($memory);
-
+        shm_detach($memory);
         return $result;
+    }
+
+    /**
+     * @return resource
+     */
+    private function getMemResource()
+    {
+        return shm_attach($this->pointerId, $this->bufferSize);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isSupported()
+    {
+        return function_exists('shm_attach');
     }
 }
