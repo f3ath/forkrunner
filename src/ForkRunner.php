@@ -1,8 +1,6 @@
 <?php
 namespace F3\ForkRunner;
 
-use RuntimeException;
-
 /**
  * Running a callback in parallel processes
  */
@@ -29,13 +27,12 @@ class ForkRunner
     {
         $this->collector->init();
         $children = [];
-        $keys = [];
         foreach ($argsCollection as $key => $args) {
             $pid = pcntl_fork();
-            $keys[] = $key;
             switch ($pid) {
                 case -1:
-                    throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key, count($argsCollection)));
+                    throw new RuntimeException(sprintf('Unable to fork process %d of %d', $key,
+                        count($argsCollection)));
                 case 0: // child
                     $this->collector->setValue($key, call_user_func_array($callback, $args));
                     die(0);
@@ -43,7 +40,6 @@ class ForkRunner
                     $children[] = $pid;
             }
         }
-
         foreach ($children as $child) {
             pcntl_waitpid($child, $status);
         }
