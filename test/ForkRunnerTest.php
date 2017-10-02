@@ -8,7 +8,6 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
     {
         $func = function ($n) {
             sleep(1);
-
             return $n * $n;
         };
 
