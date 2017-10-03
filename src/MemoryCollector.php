@@ -53,6 +53,6 @@ class MemoryCollector implements Collector
 
     public function isSupported()
     {
-        return true;
+        return extension_loaded('sysvsem') && extension_loaded('sysvshm');
     }
 }

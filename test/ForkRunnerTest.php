@@ -12,7 +12,7 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
         $func = function ($n) {
             return $n * $n;
         };
-        $runner = new ForkRunner();
+        $runner = new ForkRunner($collector);
         $args = [[3], [4], [5]];
         $result = $runner->run($func, $args); // [9, 16, 25]
         $this->assertEquals([9, 16, 25], $result);
