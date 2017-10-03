@@ -35,17 +35,15 @@ class MemoryCollector implements Collector
         while (false === shm_has_var($memory, $key)) {
             shm_put_var($memory, $key, $val);
         }
-        // TODO: Save keys into memory (not temp file) or think how get all keys from memory block
-        file_put_contents($this->keyFile, $key . PHP_EOL, FILE_APPEND);
         shm_detach($memory);
     }
 
-    public function getValues()
+    public function getValues(array $keys)
     {
         sem_remove($this->semaphore);
         $memory = shm_attach($this->pointer);
         $result = [];
-        foreach ($this->getKeys() as $key) {
+        foreach ($keys as $key) {
             $result[$key] = shm_get_var($memory, $key);
         }
         shm_remove($memory);
@@ -53,11 +51,8 @@ class MemoryCollector implements Collector
         return $result;
     }
 
-    private function getKeys()
+    public function isSupported()
     {
-        $keys = file_get_contents($this->keyFile);
-        unlink($this->keyFile);
-
-        return explode(PHP_EOL, trim($keys));
+        return true;
     }
 }

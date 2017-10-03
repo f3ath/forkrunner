@@ -3,7 +3,11 @@ namespace F3\ForkRunner;
 
 class ForkRunnerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testExampleFromTheDocs()
+    /**
+     * @param Collector $collector
+     * @dataProvider collectorsProvider
+     */
+    public function testExampleFromTheDocs(Collector $collector)
     {
         $func = function ($n) {
             return $n * $n;
@@ -66,6 +70,7 @@ class ForkRunnerTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [new FileCollector()],
+            [new MemoryCollector()],
         ];
     }
 
