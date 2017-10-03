@@ -3,16 +3,12 @@ namespace F3\ForkRunner;
 
 class ForkRunnerTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @param Collector $collector
-     * @dataProvider collectorsProvider
-     */
-    public function testExampleFromTheDocs(Collector $collector)
+    public function testExampleFromTheDocs()
     {
         $func = function ($n) {
             return $n * $n;
         };
-        $runner = new ForkRunner($collector);
+        $runner = new ForkRunner();
         $args = [[3], [4], [5]];
         $result = $runner->run($func, $args); // [9, 16, 25]
         $this->assertEquals([9, 16, 25], $result);
