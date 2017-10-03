@@ -6,27 +6,17 @@
 
 namespace F3\ForkRunner;
 
-use RuntimeException;
-
 class MemoryCollector implements Collector
 {
-    const KEY = 0;
-    const LOCK_ID = -1;
     /** @var int $pointer */
     private $pointer;
-    /** @var int $locker */
-    private $locker;
     private $semaphore;
-    /** @var string $keyFile */
-    private $keyFile;
 
     public function init()
     {
         $this->pointer = ftok(__FILE__, chr(rand(0, 255)));
-        $this->locker = rand(0, 10000);
         $this->semaphore = sem_get($this->pointer, 10);
         sem_acquire($this->semaphore);
-        $this->keyFile = tempnam(sys_get_temp_dir(), 'lock');
     }
 
     public function setValue($key, $val)
