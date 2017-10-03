@@ -41,10 +41,9 @@ class ForkRunner
             }
         }
         foreach ($children as $child) {
-            pcntl_waitpid($child, $status);
-            while (!pcntl_wifexited($status)) {
-                usleep(100);
-            }
+            do {
+                pcntl_waitpid($child, $status);
+            } while (!pcntl_wifexited($status));
         }
         return $this->collector->getValues(array_keys($argsCollection));
     }
