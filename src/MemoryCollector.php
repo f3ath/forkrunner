@@ -6,6 +6,8 @@
 
 namespace F3\ForkRunner;
 
+use RuntimeException;
+
 class MemoryCollector implements Collector
 {
     const KEY = 0;
@@ -30,8 +32,8 @@ class MemoryCollector implements Collector
     public function setValue($key, $val)
     {
         $memory = shm_attach($this->pointer);
-        while (false === shm_put_var($memory, $key, $val)) {
-            usleep(1);
+        while (false === shm_has_var($memory, $key)) {
+            shm_put_var($memory, $key, $val);
         }
         // TODO: Save keys into memory (not temp file) or think how get all keys from memory block
         file_put_contents($this->keyFile, $key . PHP_EOL, FILE_APPEND);
