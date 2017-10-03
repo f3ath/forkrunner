@@ -35,13 +35,15 @@ class ForkRunner
                         count($argsCollection)));
                 case 0: // child
                     $this->collector->setValue($key, call_user_func_array($callback, $args));
-                    die(0);
+                    exit(0);
                 default: //parent
                     $children[] = $pid;
             }
         }
         foreach ($children as $child) {
-            pcntl_waitpid($child, $status);
+            do {
+                pcntl_waitpid($child, $status);
+            } while (!pcntl_wifexited($status));
         }
         return $this->collector->getValues(array_keys($argsCollection));
     }

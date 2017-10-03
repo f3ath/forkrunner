@@ -19,7 +19,7 @@ interface Collector
 
     /**
      * Set value. Should be called from an "executor" process
-     * @param string|int $key
+     * @param int $key
      * @param mixed $val
      * @return
      */
